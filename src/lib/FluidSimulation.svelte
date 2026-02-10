@@ -40,7 +40,7 @@
 	const separateParticles = true;
 	const showParticles = true;
 	const showGrid = false;
-	const damping = 1.0;
+	const damping = 0.93;
 
 	// Particle count controls
 	const relWaterWidth = 0.6; // Water width as fraction of tank (0.1 to 1.0)
