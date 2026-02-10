@@ -127,11 +127,9 @@
 		}
 	};
 
-	onclick = (event: MouseEvent) => {
-		if (appState === 'ready') {
-			onTap();
-		}
-	}
+	onMount(() => {
+		window.addEventListener('click', onTap);
+	})
 
 	const startListening = () => {
 		if (!browser) return;
