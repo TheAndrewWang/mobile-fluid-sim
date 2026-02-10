@@ -127,6 +127,12 @@
 		}
 	};
 
+	onclick = (event: MouseEvent) => {
+		if (appState === 'ready') {
+			onTap();
+		}
+	}
+
 	const startListening = () => {
 		if (!browser) return;
 		window.addEventListener('deviceorientation', onOrientationChange);
@@ -215,6 +221,16 @@
 		// Update other properties immediately
 		colorDiffusionCoeff = newFluid.colorDiffusionCoeff;
 		foamReturnRate = newFluid.foamReturnRate;
+	};
+
+	const onTap = () => {
+        currentFluidIndex = (currentFluidIndex + 1) % fluidTypes.length;
+		const newFluid = fluidTypes[currentFluidIndex];
+
+		 //Tween only the colors
+		 fluidColor.target = newFluid.fluidColor;
+		 foamColor.target = newFluid.foamColor;
+
 	};
 </script>
 
