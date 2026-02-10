@@ -86,7 +86,7 @@
 	// Shake detection
 	let lastShakeTime = 0;
 	let lastAcceleration = { x: 0, y: 0, z: 0 };
-	let shakeThreshold = 15;
+	let shakeThreshold = 100;
 	let shakeTimeThreshold = 600;
 
 	const requestPermission = async () => {
