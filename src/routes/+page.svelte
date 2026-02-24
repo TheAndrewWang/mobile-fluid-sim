@@ -137,7 +137,7 @@
 		window.addEventListener('devicemotion', onDeviceMotion);
 	};
 	
-
+	let element = document.createElement('h1');
 	const onDeviceMotion = (event: DeviceMotionEvent) => {
 		if (!event.accelerationIncludingGravity) return;
 
@@ -146,9 +146,7 @@
 		const y = acceleration.y || 0;
 		const z = acceleration.z || 0;
 
-		let element = document.createElement('h1');
-		element.textContent = `X: ${x}, Y: ${y}, Z: ${z}`;
-		document.body.appendChild(element);
+
 
 		// Calculate the magnitude of acceleration change
 		const deltaX = Math.abs(x - lastAcceleration.x);
@@ -162,6 +160,10 @@
 		if (totalDelta > shakeThreshold && currentTime - lastShakeTime > shakeTimeThreshold) {
 			onShake();
 			lastShakeTime = currentTime;
+
+		
+			element.textContent = `X: ${x}, Y: ${y}, Z: ${z}`;
+			document.body.appendChild(element);
 		}
 
 		// Update last acceleration values
