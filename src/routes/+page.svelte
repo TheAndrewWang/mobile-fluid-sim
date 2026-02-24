@@ -86,7 +86,7 @@
 	// Shake detection
 	let lastShakeTime = 0;
 	let lastAcceleration = { x: 0, y: 0, z: 0 };
-	let shakeThreshold = 500;
+	let shakeThreshold = 100;
 	let shakeTimeThreshold = 600;
 
 	const requestPermission = async () => {
@@ -158,7 +158,7 @@
 
 		// Check if shake threshold is exceeded and enough time has passed
 		if (totalDelta > shakeThreshold && currentTime - lastShakeTime > shakeTimeThreshold) {
-			onShake(x, y);
+			onShake(deltaX, deltaY);
 			lastShakeTime = currentTime;
 
 		
@@ -227,8 +227,8 @@
 		colorDiffusionCoeff = newFluid.colorDiffusionCoeff;
 		foamReturnRate = newFluid.foamReturnRate;
 
-		const spikeIntensity = 500
-		gravity.x = -x * spikeIntensity;
+		const spikeIntensity = 5000
+		gravity.x = x * spikeIntensity;
 		gravity.y = y * spikeIntensity;
 	};
 
