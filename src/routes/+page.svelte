@@ -141,6 +141,7 @@
 		if (!event.accelerationIncludingGravity) return;
 
 		const acceleration = event.accelerationIncludingGravity;
+		console.log('Acceleration:', acceleration);
 		const x = acceleration.x || 0;
 		const y = acceleration.y || 0;
 		const z = acceleration.z || 0;
