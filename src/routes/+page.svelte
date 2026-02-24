@@ -158,7 +158,7 @@
 
 		// Check if shake threshold is exceeded and enough time has passed
 		if (totalDelta > shakeThreshold && currentTime - lastShakeTime > shakeTimeThreshold) {
-			onShake(deltaX, deltaY);
+			onShake(x - lastAcceleration.x, y - lastAcceleration.y);
 			lastShakeTime = currentTime;
 
 		
@@ -169,7 +169,7 @@
 		// Update last acceleration values
 		lastAcceleration = { x, y, z };
 	};
-/*
+
 	const onOrientationChange = (event: DeviceOrientationEvent) => {
 		if (event.beta !== null && event.gamma !== null) {
 			const beta = event.beta;
@@ -184,11 +184,11 @@
 
 			const gx = sinGamma * cosBeta;
 			const gy = -sinBeta;
-
+			/*
 			gravity.x = MAX_GRAVITY * Math.max(-1, Math.min(1, gx));
-			gravity.y = MAX_GRAVITY * Math.max(-1, Math.min(1, gy));
+			gravity.y = MAX_GRAVITY * Math.max(-1, Math.min(1, gy));*/
 		}
-	};*/
+	};
 
 	onMount(async () => {
 		if (!browser) return;
