@@ -86,7 +86,7 @@
 	// Shake detection
 	let lastShakeTime = 0;
 	let lastAcceleration = { x: 0, y: 0, z: 0 };
-	let shakeThreshold = 100;
+	let shakeThreshold = 15;
 	let shakeTimeThreshold = 600;
 
 	const requestPermission = async () => {
@@ -158,7 +158,7 @@
 
 		// Check if shake threshold is exceeded and enough time has passed
 		if (totalDelta > shakeThreshold && currentTime - lastShakeTime > shakeTimeThreshold) {
-			onShake();
+			onShake(x, y);
 			lastShakeTime = currentTime;
 
 		
@@ -215,7 +215,7 @@
 		}
 	});
 
-	const onShake = () => {
+	const onShake = (x:number, y:number) => {
 		currentFluidIndex = (currentFluidIndex + 1) % fluidTypes.length;
 		const newFluid = fluidTypes[currentFluidIndex];
 
@@ -226,6 +226,10 @@
 		// Update other properties immediately
 		colorDiffusionCoeff = newFluid.colorDiffusionCoeff;
 		foamReturnRate = newFluid.foamReturnRate;
+
+		const spikeIntensity = 5
+		gravity.x = -x * spikeIntensity;
+		gravity.y = y * spikeIntensity;
 	};
 
 	const onTap = () => {
