@@ -169,7 +169,7 @@
 		// Update last acceleration values
 		lastAcceleration = { x, y, z };
 	};
-
+/*
 	const onOrientationChange = (event: DeviceOrientationEvent) => {
 		if (event.beta !== null && event.gamma !== null) {
 			const beta = event.beta;
@@ -188,7 +188,7 @@
 			gravity.x = MAX_GRAVITY * Math.max(-1, Math.min(1, gx));
 			gravity.y = MAX_GRAVITY * Math.max(-1, Math.min(1, gy));
 		}
-	};
+	};*/
 
 	onMount(async () => {
 		if (!browser) return;
