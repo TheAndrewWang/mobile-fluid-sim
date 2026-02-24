@@ -38,7 +38,8 @@
 	const overRelaxation = 1.7;
 	const compensateDrift = true;
 	const separateParticles = true;
-	const showParticles = true;
+	const showParticles = false; // set true to overlay raw particles on top
+	const showFluid = true;      // metaball fluid surface
 	const showGrid = false;
 	const damping = 0.95;
 
@@ -86,6 +87,7 @@
 
 		renderer.render(fluid, {
 			showParticles,
+			showFluid,
 			showGrid,
 			simWidth,
 			simHeight
