@@ -136,15 +136,19 @@
 		window.addEventListener('deviceorientation', onOrientationChange);
 		window.addEventListener('devicemotion', onDeviceMotion);
 	};
+	
 
 	const onDeviceMotion = (event: DeviceMotionEvent) => {
 		if (!event.accelerationIncludingGravity) return;
 
 		const acceleration = event.accelerationIncludingGravity;
-		console.log('Acceleration:', acceleration);
 		const x = acceleration.x || 0;
 		const y = acceleration.y || 0;
 		const z = acceleration.z || 0;
+
+		let element = document.createElement('h1');
+		element.textContent = {acceleration}.toString();
+		document.body.appendChild(element);
 
 		// Calculate the magnitude of acceleration change
 		const deltaX = Math.abs(x - lastAcceleration.x);
@@ -287,4 +291,8 @@
 			<PopupInfo />
 		{/if}
 	{/if}
+
+	
 </div>
+
+
