@@ -147,7 +147,7 @@
 		const z = acceleration.z || 0;
 
 		let element = document.createElement('h1');
-		element.textContent = JSON.stringify({x, y, z});
+		element.textContent = `X: ${x}, Y: ${y}, Z: ${z}`;
 		document.body.appendChild(element);
 
 		// Calculate the magnitude of acceleration change
