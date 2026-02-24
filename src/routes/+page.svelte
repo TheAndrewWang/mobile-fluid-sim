@@ -86,7 +86,7 @@
 	// Shake detection
 	let lastShakeTime = 0;
 	let lastAcceleration = { x: 0, y: 0, z: 0 };
-	let shakeThreshold = 100000;
+	let shakeThreshold = 1;
 	let shakeTimeThreshold = 600;
 
 	const requestPermission = async () => {
@@ -137,7 +137,7 @@
 		window.addEventListener('devicemotion', onDeviceMotion);
 	};
 	
-	let element = document.createElement('h1');
+	//let element = document.createElement('h1');
 	const onDeviceMotion = (event: DeviceMotionEvent) => {
 		if (!event.accelerationIncludingGravity) return;
 
@@ -162,8 +162,8 @@
 			lastShakeTime = currentTime;
 
 		
-			element.textContent = `X: ${x}, Y: ${y}, Z: ${z}`;
-			document.body.appendChild(element);
+			//element.textContent = `X: ${x}, Y: ${y}, Z: ${z}`;
+			//document.body.appendChild(element);
 		}
 
 		// Update last acceleration values
@@ -228,8 +228,8 @@
 		foamReturnRate = newFluid.foamReturnRate;
 
 		const spikeIntensity = 50000
-		gravity.x = -x * spikeIntensity;
-		gravity.y = -y * spikeIntensity;
+		gravity.x = x * spikeIntensity;
+		gravity.y = y * spikeIntensity;
 	};
 
 	const onTap = () => {
