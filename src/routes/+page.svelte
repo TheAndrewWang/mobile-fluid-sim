@@ -229,7 +229,7 @@
 
 		const spikeIntensity = 50000
 		gravity.x = -x * spikeIntensity;
-		gravity.y = y * spikeIntensity;
+		gravity.y = -y * spikeIntensity;
 	};
 
 	const onTap = () => {
