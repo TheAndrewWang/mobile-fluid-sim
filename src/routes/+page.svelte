@@ -158,7 +158,7 @@
 		const currentTime = Date.now();
 
 		// Check if shake threshold is exceeded and enough time has passed
-		if (totalDelta > shakeThreshold && currentTime - lastShakeTime > shakeTimeThreshold) {
+		if (totalDelta > shakeThreshold) {
 			onShake(x, y);
 			lastShakeTime = currentTime;
 
