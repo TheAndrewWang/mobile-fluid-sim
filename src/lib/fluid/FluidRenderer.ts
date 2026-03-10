@@ -138,7 +138,7 @@ export class FluidRenderer {
     private accumHeight = 0;
 
     // Metaball parameters — tune these to adjust fluid appearance
-    private influenceRadius = 0.12;  // sim-space radius of each particle's blob
+    private influenceRadius = 0.06;  // sim-space radius of each particle's blob
     private accumScale = 0.5;        // per-particle peak contribution (lower = need more overlap)
     private threshold = 0.45;        // alpha threshold to show fluid (lower = puffier)
 
