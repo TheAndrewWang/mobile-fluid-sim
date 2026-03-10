@@ -88,7 +88,7 @@
 	let lastShakeTime = 0;
 	let lastAcceleration = { x: 0, y: 0, z: 0 };
 	let shakeThreshold = 5;
-	let shakeTimeThreshold = 600;
+	let shakeTimeThreshold = 50;
 
 	const requestPermission = async () => {
 		if (!browser) return;
