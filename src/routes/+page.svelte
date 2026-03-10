@@ -10,6 +10,7 @@
 	import FluidSimulation from '$lib/FluidSimulation.svelte';
 	import GitHubLink from '$lib/GitHubLink.svelte';
 	import PopupInfo from '$lib/PopupInfo.svelte';
+	import { Grab } from '@lucide/svelte';
 
 	var MAX_GRAVITY = 50.81;
 	let message = $state('');
@@ -166,6 +167,9 @@
 
 
 			message = `X: ${x}, Y: ${y}, Z: ${z}`;
+			if (y > 0) {
+				gravity.y = MAX_GRAVITY * y;
+			}
 
 		}
 
