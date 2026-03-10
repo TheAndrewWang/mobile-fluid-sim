@@ -12,8 +12,8 @@
 	import PopupInfo from '$lib/PopupInfo.svelte';
 
 	var MAX_GRAVITY = 50.81;
-	let element = document.createElement('div');
-	document.body.appendChild(element);
+	//let element = document.createElement('div');
+	//document.body.appendChild(element);
 
 	type AppState = 'loading' | 'needs-permission' | 'ready' | 'denied' | 'not-supported';
 
@@ -166,7 +166,7 @@
 			MAX_GRAVITY = 250.81;
 
 			
-			element.textContent = `X: ${x}, Y: ${y}, Z: ${z}`;
+			//element.textContent = `X: ${x}, Y: ${y}, Z: ${z}`;
 			
 		}
 
