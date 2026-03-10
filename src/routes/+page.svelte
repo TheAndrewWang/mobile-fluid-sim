@@ -11,7 +11,7 @@
 	import GitHubLink from '$lib/GitHubLink.svelte';
 	import PopupInfo from '$lib/PopupInfo.svelte';
 
-	const MAX_GRAVITY = 1.81;
+	const MAX_GRAVITY = 100.81;
 
 	type AppState = 'loading' | 'needs-permission' | 'ready' | 'denied' | 'not-supported';
 
