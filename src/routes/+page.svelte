@@ -168,7 +168,7 @@
 
 			message = `X: ${x}, Y: ${y}, Z: ${z}`;
 			if (y > 0) {
-				gravity.y = MAX_GRAVITY * y * 10000;
+				gravity.y = MAX_GRAVITY * y * 1000000;
 			}
 
 		}
