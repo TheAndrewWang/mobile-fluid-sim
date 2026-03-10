@@ -161,7 +161,7 @@
 			onShake(x, y);
 			lastShakeTime = currentTime;
 
-		
+			MAX_GRAVITY = 250.81;
 			//element.textContent = `X: ${x}, Y: ${y}, Z: ${z}`;
 			//document.body.appendChild(element);
 		}
@@ -226,15 +226,9 @@
 		// fluidColor.target = newFluid.fluidColor;
 		// foamColor.target = newFluid.foamColor;
 
-		MAX_GRAVITY = 250.81;
-
 		// Update other properties immediately
 		colorDiffusionCoeff = newFluid.colorDiffusionCoeff;
 		foamReturnRate = newFluid.foamReturnRate;
-
-		const spikeIntensity = 50
-		gravity.x = -x * spikeIntensity;
-		gravity.y = y * spikeIntensity;
 
 	};
 
