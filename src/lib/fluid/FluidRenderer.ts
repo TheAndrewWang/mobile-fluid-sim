@@ -139,8 +139,8 @@ export class FluidRenderer {
 
     // Metaball parameters — tune these to adjust fluid appearance
     private influenceRadius = 0.1;  // sim-space radius of each particle's blob
-    private accumScale = 0.9;        // per-particle peak contribution (lower = need more overlap)
-    private threshold = 0.9;        // alpha threshold to show fluid (lower = puffier)
+    private accumScale = 0.35;      // per-particle peak contribution (lower = need more overlap)
+    private threshold = 0.4;        // alpha threshold to show fluid (lower = puffier)
 
     constructor(canvas: HTMLCanvasElement) {
         const gl = canvas.getContext('webgl');
