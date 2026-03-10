@@ -12,6 +12,8 @@
 	import PopupInfo from '$lib/PopupInfo.svelte';
 
 	var MAX_GRAVITY = 50.81;
+	let element = document.createElement('div');
+	document.body.appendChild(element);
 
 	type AppState = 'loading' | 'needs-permission' | 'ready' | 'denied' | 'not-supported';
 
@@ -137,7 +139,7 @@
 		window.addEventListener('devicemotion', onDeviceMotion);
 	};
 	
-	//let element = document.createElement('h1');
+
 	const onDeviceMotion = (event: DeviceMotionEvent) => {
 		if (!event.accelerationIncludingGravity) return;
 
@@ -162,8 +164,10 @@
 			lastShakeTime = currentTime;
 
 			MAX_GRAVITY = 250.81;
-			//element.textContent = `X: ${x}, Y: ${y}, Z: ${z}`;
-			//document.body.appendChild(element);
+
+			
+			element.textContent = `X: ${x}, Y: ${y}, Z: ${z}`;
+			
 		}
 
 		if (totalDelta < shakeThreshold) {
