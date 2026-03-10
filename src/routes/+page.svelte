@@ -166,13 +166,12 @@
 			MAX_GRAVITY = 250.81;
 
 
-			//message = `X: ${x}, Y: ${y}, Z: ${z}`;
+			message = `X: ${x}, Y: ${y}, Z: ${z}`;
 			if (y > 0) {
-				message = `X: ${x}, Y: ${y}, Z: ${z}`;
 				gravity.y = MAX_GRAVITY * deltaY * 1000000;
 			}
 			if (y < 0) {
-				gravity.y = -MAX_GRAVITY * deltaY * 1000;
+				gravity.y = -MAX_GRAVITY * deltaY * 100000;
 			}
 
 		}
