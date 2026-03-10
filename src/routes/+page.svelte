@@ -11,7 +11,7 @@
 	import GitHubLink from '$lib/GitHubLink.svelte';
 	import PopupInfo from '$lib/PopupInfo.svelte';
 
-	const MAX_GRAVITY = 100.81;
+	var MAX_GRAVITY = 50.81;
 
 	type AppState = 'loading' | 'needs-permission' | 'ready' | 'denied' | 'not-supported';
 
@@ -86,7 +86,7 @@
 	// Shake detection
 	let lastShakeTime = 0;
 	let lastAcceleration = { x: 0, y: 0, z: 0 };
-	let shakeThreshold = 15;
+	let shakeThreshold = 5;
 	let shakeTimeThreshold = 600;
 
 	const requestPermission = async () => {
@@ -166,6 +166,9 @@
 			//document.body.appendChild(element);
 		}
 
+		if (totalDelta < shakeThreshold) {
+			MAX_GRAVITY = 50.81;
+		}
 		// Update last acceleration values
 		lastAcceleration = { x, y, z };
 	};
@@ -223,6 +226,8 @@
 		// fluidColor.target = newFluid.fluidColor;
 		// foamColor.target = newFluid.foamColor;
 
+		MAX_GRAVITY = 250.81;
+
 		// Update other properties immediately
 		colorDiffusionCoeff = newFluid.colorDiffusionCoeff;
 		foamReturnRate = newFluid.foamReturnRate;
@@ -230,6 +235,7 @@
 		const spikeIntensity = 50
 		gravity.x = -x * spikeIntensity;
 		gravity.y = y * spikeIntensity;
+
 	};
 
 	const onTap = () => {
