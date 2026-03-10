@@ -10,6 +10,7 @@
 	import FluidSimulation from '$lib/FluidSimulation.svelte';
 	import GitHubLink from '$lib/GitHubLink.svelte';
 	import PopupInfo from '$lib/PopupInfo.svelte';
+	import { Grab } from '@lucide/svelte';
 
 	var MAX_GRAVITY = 50.81;
 	let message = $state('');
@@ -88,7 +89,7 @@
 	let lastShakeTime = 0;
 	let lastAcceleration = { x: 0, y: 0, z: 0 };
 	let shakeThreshold = 5;
-	let shakeTimeThreshold = 600;
+	let shakeTimeThreshold = 50;
 
 	const requestPermission = async () => {
 		if (!browser) return;
@@ -158,14 +159,21 @@
 		const currentTime = Date.now();
 
 		// Check if shake threshold is exceeded and enough time has passed
-		if (totalDelta > shakeThreshold && currentTime - lastShakeTime > shakeTimeThreshold) {
+		if (totalDelta > shakeThreshold) {
 			onShake(x, y);
 			lastShakeTime = currentTime;
 
 			MAX_GRAVITY = 250.81;
 
 
-			message = `X: ${x}, Y: ${y}, Z: ${z}`;
+			//message = `X: ${x}, Y: ${y}, Z: ${z}`;
+			if (y > 0) {
+				message = `X: ${x}, Y: ${y}, Z: ${z}`;
+				gravity.y = MAX_GRAVITY * deltaY * 1000000;
+			}
+			if (y < 0) {
+				gravity.y = -MAX_GRAVITY * deltaY * 1000;
+			}
 
 		}
 
