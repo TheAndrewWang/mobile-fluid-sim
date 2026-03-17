@@ -163,7 +163,7 @@
 			onShake(x, y);
 			lastShakeTime = currentTime;
 
-			MAX_GRAVITY = 150.81;
+			MAX_GRAVITY = 50.81;
 
 
 			message = `X: ${x}, Y: ${y}, Z: ${z}`;
