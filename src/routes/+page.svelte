@@ -169,10 +169,10 @@
 			message = `X: ${x}, Y: ${y}, Z: ${z}`;
 			if (y > 0) {
 				message = `X: ${x}, Y: ${y}, Z: ${z}`;
-				gravity.y = MAX_GRAVITY * y * 100;
+				gravity.y = MAX_GRAVITY * y;
 			}
 			if (y < 0) {
-				gravity.y = -MAX_GRAVITY * y * 100;
+				gravity.y = -MAX_GRAVITY * y;
 			}
 
 		}
