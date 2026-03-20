@@ -185,7 +185,7 @@
 
 		if (totalDelta < shakeThreshold) {
 			MAX_GRAVITY = 50.81;
-			message3 = `G: ${MAX_GRAVITY}`;
+			//message3 = `G: ${MAX_GRAVITY}`;
 		}
 		// Update last acceleration values
 		lastAcceleration = { x, y, z };
