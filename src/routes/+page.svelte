@@ -17,6 +17,8 @@
 	let message2 = $state('');
 	let message3 = $state('');
 	let message4 = $state('');
+	let rawX = 0;
+    let rawY = 0;
 
 	type AppState = 'loading' | 'needs-permission' | 'ready' | 'denied' | 'not-supported';
 
@@ -206,12 +208,23 @@
 			const gx = sinGamma * cosBeta;
 			const gy = -sinBeta;
 			
-			gravity.x = MAX_GRAVITY * Math.max(-1, Math.min(1, gx));
-			gravity.y = MAX_GRAVITY * Math.max(-1, Math.min(1, gy));
+			rawX = MAX_GRAVITY * Math.max(-1, Math.min(1, gx));
+        	rawY = MAX_GRAVITY * Math.max(-1, Math.min(1, gy));
 			//message2 = `X: ${gx}, Y: ${gy}`;
 			//message4 = `XG: ${gravity.x}, YG: ${gravity.y}`;
 		}
 	};
+
+	// Update Svelte state only when the browser is ready to paint
+	function updateLoop() {
+		gravity.x = rawX;
+		gravity.y = rawY;
+		requestAnimationFrame(updateLoop);
+	}
+	onMount(() => {
+		const frame = requestAnimationFrame(updateLoop);
+		return () => cancelAnimationFrame(frame);
+	});
 
 	onMount(async () => {
 		if (!browser) return;
