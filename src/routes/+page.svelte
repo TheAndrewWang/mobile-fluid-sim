@@ -15,6 +15,8 @@
 	var MAX_GRAVITY = 50.81;
 	let message = $state('');
 	let message2 = $state('');
+	let message3 = $state('');
+	let message4 = $state('');
 
 	type AppState = 'loading' | 'needs-permission' | 'ready' | 'denied' | 'not-supported';
 
@@ -165,21 +167,25 @@
 			lastShakeTime = currentTime;
 
 			MAX_GRAVITY = 250.81;
+			message3 = `G: ${MAX_GRAVITY}`;
 
 
 			//message = `X: ${x}, Y: ${y}, Z: ${z}`;
 			if (y < 0) {
 				message = `X: ${x}, Y: ${y}, Z: ${z}`;
-				gravity.y = MAX_GRAVITY * y;
+				gravity.y = MAX_GRAVITY * (-y);
+				message4 = `XG: ${gravity.x}, YG: ${gravity.y}`;
 			}
+			/*
 			if (y > 0) {
 				gravity.y = -MAX_GRAVITY * y;
-			}
+			}*/
 
 		}
 
 		if (totalDelta < shakeThreshold) {
 			MAX_GRAVITY = 50.81;
+			message3 = `G: ${MAX_GRAVITY}`;
 		}
 		// Update last acceleration values
 		lastAcceleration = { x, y, z };
@@ -203,6 +209,7 @@
 			gravity.x = MAX_GRAVITY * Math.max(-1, Math.min(1, gx));
 			gravity.y = MAX_GRAVITY * Math.max(-1, Math.min(1, gy));
 			message2 = `X: ${gx}, Y: ${gy}`;
+			message4 = `XG: ${gravity.x}, YG: ${gravity.y}`;
 		}
 	};
 
@@ -316,6 +323,5 @@
 
 <div> {message}</div>
 <div>{message2}</div>
-
-
-
+<div>{message3}</div>
+<div>{message4}</div>
