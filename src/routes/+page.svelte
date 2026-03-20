@@ -167,14 +167,14 @@
 			lastShakeTime = currentTime;
 
 			MAX_GRAVITY = 581.0;
-			message3 = `TD: ${totalDelta}`;
+			//message3 = `TD: ${totalDelta}`;
 
 
-			message = `X: ${x}, Y: ${y}, Z: ${z}`;
+			//message = `X: ${x}, Y: ${y}, Z: ${z}`;
 			if (deltaY > 3) {
 				//message = `X: ${x}, Y: ${y}, Z: ${z}`;
 				gravity.y = MAX_GRAVITY * (-y);
-				message4 = `XG: ${gravity.x}, YG: ${gravity.y}`;
+				//message4 = `XG: ${gravity.x}, YG: ${gravity.y}`;
 			}
 			/*
 			if (y > 0) {
@@ -208,8 +208,8 @@
 			
 			gravity.x = MAX_GRAVITY * Math.max(-1, Math.min(1, gx));
 			gravity.y = MAX_GRAVITY * Math.max(-1, Math.min(1, gy));
-			message2 = `X: ${gx}, Y: ${gy}`;
-			message4 = `XG: ${gravity.x}, YG: ${gravity.y}`;
+			//message2 = `X: ${gx}, Y: ${gy}`;
+			//message4 = `XG: ${gravity.x}, YG: ${gravity.y}`;
 		}
 	};
 
@@ -321,7 +321,9 @@
 	
 </div>
 
-<div> {message}</div>
+
+<div>{message}</div>
 <div>{message2}</div>
 <div>{message3}</div>
 <div>{message4}</div>
+
