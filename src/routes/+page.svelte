@@ -91,7 +91,7 @@
 	// Shake detection
 	let lastShakeTime = 0;
 	let lastAcceleration = { x: 0, y: 0, z: 0 };
-	let shakeThreshold = 30;
+	let shakeThreshold = 20;
 	let shakeTimeThreshold = 1000;
 
 	const requestPermission = async () => {
@@ -173,7 +173,7 @@
 			message = `X: ${x}, Y: ${y}, Z: ${z}`;
 			if (deltaY > 5) {
 				//message = `X: ${x}, Y: ${y}, Z: ${z}`;
-				gravity.y = MAX_GRAVITY * (-y);
+				gravity.y = MAX_GRAVITY * Math.abs(y);
 				message4 = `XG: ${gravity.x}, YG: ${gravity.y}`;
 			}
 			/*
