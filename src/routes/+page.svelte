@@ -175,17 +175,13 @@
 			//message = `X: ${x}, Y: ${y}, Z: ${z}`;
 			if (deltaY > 3) {
 				//message = `X: ${x}, Y: ${y}, Z: ${z}`;
-				gravity.y = MAX_GRAVITY * (-y);
+				rawY = MAX_GRAVITY * (-y);
 				//message4 = `XG: ${gravity.x}, YG: ${gravity.y}`;
 			}
-			/*
-			if (y > 0) {
-				gravity.y = -MAX_GRAVITY * y;
-			}*/
 
 		}
 
-		if (totalDelta < shakeThreshold) {
+		else {
 			MAX_GRAVITY = 50.81;
 			//message3 = `G: ${MAX_GRAVITY}`;
 		}
