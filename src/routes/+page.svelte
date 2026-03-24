@@ -11,9 +11,16 @@
 	import GitHubLink from '$lib/GitHubLink.svelte';
 	import PopupInfo from '$lib/PopupInfo.svelte';
 
-	var MAX_GRAVITY = 50.81;
+	const GRAVITY_SCALE = 50.81;
+	const SHAKE_THRESHOLD = 18;
+	const SHAKE_COOLDOWN = 1000;
+	const SHAKE_SMOOTHING = 0.15;
+	const SHAKE_IMPULSE_STRENGTH = -80;
+	const SHAKE_IMPULSE_DECAY = 0.9;
+
 	let rawX = 0;
 	let rawY = 0;
+	let shakeImpulseY = 0;
 
 	type AppState = 'loading' | 'needs-permission' | 'ready' | 'denied' | 'not-supported';
 
@@ -71,7 +78,7 @@
 	let currentFluidIndex = $state(0);
 
 	let angle: number | undefined = $state(0);
-	let gravity: { x: number; y: number } = $state({ x: 0, y: -MAX_GRAVITY });
+	let gravity: { x: number; y: number } = $state({ x: 0, y: -GRAVITY_SCALE });
 	let fluidColor = new Tween(fluidTypes[0].fluidColor, {
 		duration: 500,
 		easing: cubicOut
@@ -87,9 +94,8 @@
 
 	// Shake detection
 	let lastShakeTime = 0;
-	let lastAcceleration = { x: 0, y: 0, z: 0 };
-	let shakeThreshold = 25;
-	let shakeTimeThreshold = 1000;
+	let lastMotionTime = 0;
+	let filteredShake = 0;
 
 	const requestPermission = async () => {
 		if (!browser) return;
@@ -98,12 +104,10 @@
 			'DeviceOrientationEvent' in window &&
 			typeof (DeviceOrientationEvent as any).requestPermission === 'function'
 		) {
-			// iOS 13+ permission request
 			try {
 				const orientationResponse = await (DeviceOrientationEvent as any).requestPermission();
 				let motionResponse = 'granted';
 
-				// Also request motion permission if available
 				if (
 					'DeviceMotionEvent' in window &&
 					typeof (DeviceMotionEvent as any).requestPermission === 'function'
@@ -141,42 +145,34 @@
 		window.addEventListener('deviceorientation', onOrientationChange);
 		window.addEventListener('devicemotion', onDeviceMotion);
 	};
-	
 
 	const onDeviceMotion = (event: DeviceMotionEvent) => {
-		if (!event.accelerationIncludingGravity) return;
+		const now = performance.now();
+		const dt = lastMotionTime ? Math.max((now - lastMotionTime) / 1000, 1 / 120) : 1 / 60;
+		lastMotionTime = now;
 
-		const acceleration = event.accelerationIncludingGravity;
-		const x = acceleration.x || 0;
-		const y = acceleration.y || 0;
-		const z = acceleration.z || 0;
+		const acceleration = event.acceleration ?? event.accelerationIncludingGravity;
+		if (!acceleration) return;
 
+		const ax = acceleration.x ?? 0;
+		const ay = acceleration.y ?? 0;
+		const az = acceleration.z ?? 0;
 
+		const magnitude = Math.sqrt(ax * ax + ay * ay + az * az);
 
-		// Calculate the magnitude of acceleration change
-		const deltaX = Math.abs(x - lastAcceleration.x);
-		const deltaY = Math.abs(y - lastAcceleration.y);
-		const deltaZ = Math.abs(z - lastAcceleration.z);
+		// Normalize by time so different sensor event rates feel more consistent.
+		const normalizedMagnitude = magnitude / Math.sqrt(dt);
 
-		const totalDelta = deltaX + deltaY + deltaZ;
+		// Smooth out noisy sensor spikes across devices.
+		filteredShake =
+			filteredShake * (1 - SHAKE_SMOOTHING) + normalizedMagnitude * SHAKE_SMOOTHING;
+
 		const currentTime = Date.now();
-		// Check if shake threshold is exceeded and enough time has passed
-		if (totalDelta > shakeThreshold && currentTime - lastShakeTime > shakeTimeThreshold) {
+		if (filteredShake > SHAKE_THRESHOLD && currentTime - lastShakeTime > SHAKE_COOLDOWN) {
 			onShake();
 			lastShakeTime = currentTime;
-
-			MAX_GRAVITY = 581.0;
-			if (deltaY > 3) {
-				rawY = MAX_GRAVITY * (-y);
-			}
-
+			shakeImpulseY = SHAKE_IMPULSE_STRENGTH;
 		}
-
-		else {
-			MAX_GRAVITY = 50.81;
-		}
-		// Update last acceleration values
-		lastAcceleration = { x, y, z };
 	};
 
 	const onOrientationChange = (event: DeviceOrientationEvent) => {
@@ -194,18 +190,22 @@
 			const gx = sinGamma * cosBeta;
 			const gy = -sinBeta;
 
-			rawX = MAX_GRAVITY * Math.max(-1, Math.min(1, gx));
-			rawY = MAX_GRAVITY * Math.max(-1, Math.min(1, gy));
+			rawX = GRAVITY_SCALE * Math.max(-1, Math.min(1, gx));
+			rawY = GRAVITY_SCALE * Math.max(-1, Math.min(1, gy));
+			angle = gamma;
 		}
 	};
 
-	// Update Svelte state only when the browser is ready to paint
 	let updateLoopFrame = 0;
 	function updateLoop() {
+		shakeImpulseY *= SHAKE_IMPULSE_DECAY;
+
 		gravity.x = rawX;
-		gravity.y = rawY;
+		gravity.y = rawY + shakeImpulseY;
+
 		updateLoopFrame = requestAnimationFrame(updateLoop);
 	}
+
 	onMount(() => {
 		updateLoopFrame = requestAnimationFrame(updateLoop);
 		return () => cancelAnimationFrame(updateLoopFrame);
@@ -215,7 +215,7 @@
 		if (!browser) return;
 
 		if (!('DeviceOrientationEvent' in window)) {
-			gravity = { x: 0, y: -MAX_GRAVITY };
+			gravity = { x: 0, y: -GRAVITY_SCALE };
 			angle = 0;
 			appState = 'not-supported';
 			return;
@@ -240,24 +240,20 @@
 		currentFluidIndex = (currentFluidIndex + 1) % fluidTypes.length;
 		const newFluid = fluidTypes[currentFluidIndex];
 
-		// Tween only the colors
-		// fluidColor.target = newFluid.fluidColor;
-		// foamColor.target = newFluid.foamColor;
-
-		// Update other properties immediately
+		fluidColor.target = newFluid.fluidColor;
+		foamColor.target = newFluid.foamColor;
 		colorDiffusionCoeff = newFluid.colorDiffusionCoeff;
 		foamReturnRate = newFluid.foamReturnRate;
-
 	};
 
 	const onTap = () => {
-        currentFluidIndex = (currentFluidIndex + 1) % fluidTypes.length;
+		currentFluidIndex = (currentFluidIndex + 1) % fluidTypes.length;
 		const newFluid = fluidTypes[currentFluidIndex];
 
-		 //Tween only the colors
-		 fluidColor.target = newFluid.fluidColor;
-		 foamColor.target = newFluid.foamColor;
-
+		fluidColor.target = newFluid.fluidColor;
+		foamColor.target = newFluid.foamColor;
+		colorDiffusionCoeff = newFluid.colorDiffusionCoeff;
+		foamReturnRate = newFluid.foamReturnRate;
 	};
 </script>
 
@@ -315,6 +311,4 @@
 			<PopupInfo />
 		{/if}
 	{/if}
-
 </div>
-
