@@ -4,6 +4,14 @@
 	import { setupFluidScene, FluidRenderer } from '$lib/fluid';
 	import type { FlipFluid } from '$lib/fluid';
 
+	type QualityPreset = {
+		resolution: number;
+		numPressureIters: number;
+		numParticleIters: number;
+		damping: number;
+		maxDpr: number;
+	};
+
 	let {
 		gravity = { x: 0, y: -9.81 },
 		resolution = 70,
@@ -31,30 +39,75 @@
 	let simHeight = 3.0;
 	let simWidth = 4.0;
 
-	const dt = 1.0 / 120.0;
+	const dt = 1.0 / 90.0;
 	const flipRatio = 0.95;
-	const numPressureIters = 60;
-	const numParticleIters = 3;
 	const overRelaxation = 1.7;
 	const compensateDrift = true;
 	const separateParticles = true;
 	const showParticles = false; // set true to overlay raw particles on top
-	const showFluid = true;      // metaball fluid surface
+	const showFluid = true; // metaball fluid surface
 	const showGrid = false;
-	const damping = 0.95;
+
+	let numPressureIters = 60;
+	let numParticleIters = 3;
+	let damping = 0.95;
+	let effectiveResolution = resolution;
+	let maxDpr = 2;
+	let isPageVisible = true;
 
 	// Particle count controls
 	const relWaterWidth = 0.6; // Water width as fraction of tank (0.1 to 1.0)
 	const relWaterHeight = 0.8; // Water height as fraction of tank (0.1 to 1.0)
+
+	function isLikelyMobileDevice() {
+		if (typeof window === 'undefined') return false;
+		const hasTouch = navigator.maxTouchPoints > 0;
+		const smallScreen = Math.min(window.innerWidth, window.innerHeight) <= 900;
+		return hasTouch && smallScreen;
+	}
+
+	function getQualityPreset(): QualityPreset {
+		const cpuThreads = navigator.hardwareConcurrency ?? 4;
+		const mobile = isLikelyMobileDevice();
+
+		if (mobile && cpuThreads <= 4) {
+			return {
+				resolution: Math.min(resolution, 46),
+				numPressureIters: 22,
+				numParticleIters: 2,
+				damping: 0.965,
+				maxDpr: 1.1
+			};
+		}
+
+		if (mobile) {
+			return {
+				resolution: Math.min(resolution, 54),
+				numPressureIters: 28,
+				numParticleIters: 2,
+				damping: 0.96,
+				maxDpr: 1.25
+			};
+		}
+
+		return {
+			resolution,
+			numPressureIters: 60,
+			numParticleIters: 3,
+			damping: 0.95,
+			maxDpr: 1.75
+		};
+	}
 
 	function resizeCanvas() {
 		if (!canvas) return;
 
 		const rect = canvas.getBoundingClientRect();
 		const devicePixelRatio = window.devicePixelRatio || 1;
+		const renderPixelRatio = Math.min(devicePixelRatio, maxDpr);
 
-		canvas.width = rect.width * devicePixelRatio;
-		canvas.height = rect.height * devicePixelRatio;
+		canvas.width = rect.width * renderPixelRatio;
+		canvas.height = rect.height * renderPixelRatio;
 
 		// Update simulation dimensions to maintain aspect ratio
 		const cScale = canvas.height / simHeight;
@@ -78,7 +131,8 @@
 			overRelaxation,
 			compensateDrift,
 			separateParticles,
-			damping
+			damping,
+			showGrid
 		);
 	}
 
@@ -95,19 +149,28 @@
 	}
 
 	function update() {
-		simulate();
-		render();
+		if (isPageVisible) {
+			simulate();
+			render();
+		}
 		animationId = requestAnimationFrame(update);
 	}
 
 	onMount(() => {
+		const quality = getQualityPreset();
+		effectiveResolution = quality.resolution;
+		numPressureIters = quality.numPressureIters;
+		numParticleIters = quality.numParticleIters;
+		damping = quality.damping;
+		maxDpr = quality.maxDpr;
+
 		resizeCanvas();
 
 		// Initialize fluid simulation
 		fluid = setupFluidScene(
 			simWidth,
 			simHeight,
-			resolution,
+			effectiveResolution,
 			relWaterWidth,
 			relWaterHeight,
 			fluidColor,
@@ -127,15 +190,22 @@
 
 		// Handle window resize
 		const handleResize = () => {
+			const preset = getQualityPreset();
+			maxDpr = preset.maxDpr;
 			resizeCanvas();
 		};
+		const handleVisibilityChange = () => {
+			isPageVisible = !document.hidden;
+		};
 		window.addEventListener('resize', handleResize);
+		document.addEventListener('visibilitychange', handleVisibilityChange);
 
 		// Start animation loop
 		update();
 
 		return () => {
 			window.removeEventListener('resize', handleResize);
+			document.removeEventListener('visibilitychange', handleVisibilityChange);
 			if (animationId) {
 				cancelAnimationFrame(animationId);
 			}

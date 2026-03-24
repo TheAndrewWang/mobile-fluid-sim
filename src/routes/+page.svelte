@@ -10,15 +10,10 @@
 	import FluidSimulation from '$lib/FluidSimulation.svelte';
 	import GitHubLink from '$lib/GitHubLink.svelte';
 	import PopupInfo from '$lib/PopupInfo.svelte';
-	import { Grab } from '@lucide/svelte';
 
 	var MAX_GRAVITY = 50.81;
-	let message = $state('');
-	let message2 = $state('');
-	let message3 = $state('');
-	let message4 = $state('');
 	let rawX = 0;
-    let rawY = 0;
+	let rawY = 0;
 
 	type AppState = 'loading' | 'needs-permission' | 'ready' | 'denied' | 'not-supported';
 
@@ -136,7 +131,10 @@
 
 	onMount(() => {
 		window.addEventListener('click', onTap);
-	})
+		return () => {
+			window.removeEventListener('click', onTap);
+		};
+	});
 
 	const startListening = () => {
 		if (!browser) return;
@@ -162,28 +160,20 @@
 
 		const totalDelta = deltaX + deltaY + deltaZ;
 		const currentTime = Date.now();
-
 		// Check if shake threshold is exceeded and enough time has passed
-		if (totalDelta > shakeThreshold) {
-			onShake(x, y);
+		if (totalDelta > shakeThreshold && currentTime - lastShakeTime > shakeTimeThreshold) {
+			onShake();
 			lastShakeTime = currentTime;
 
 			MAX_GRAVITY = 581.0;
-			//message3 = `TD: ${totalDelta}`;
-
-
-			//message = `X: ${x}, Y: ${y}, Z: ${z}`;
 			if (deltaY > 3) {
-				//message = `X: ${x}, Y: ${y}, Z: ${z}`;
 				rawY = MAX_GRAVITY * (-y);
-				//message4 = `XG: ${gravity.x}, YG: ${gravity.y}`;
 			}
 
 		}
 
 		else {
 			MAX_GRAVITY = 50.81;
-			//message3 = `G: ${MAX_GRAVITY}`;
 		}
 		// Update last acceleration values
 		lastAcceleration = { x, y, z };
@@ -203,23 +193,22 @@
 
 			const gx = sinGamma * cosBeta;
 			const gy = -sinBeta;
-			
+
 			rawX = MAX_GRAVITY * Math.max(-1, Math.min(1, gx));
-        	rawY = MAX_GRAVITY * Math.max(-1, Math.min(1, gy));
-			//message2 = `X: ${gx}, Y: ${gy}`;
-			//message4 = `XG: ${gravity.x}, YG: ${gravity.y}`;
+			rawY = MAX_GRAVITY * Math.max(-1, Math.min(1, gy));
 		}
 	};
 
 	// Update Svelte state only when the browser is ready to paint
+	let updateLoopFrame = 0;
 	function updateLoop() {
 		gravity.x = rawX;
 		gravity.y = rawY;
-		requestAnimationFrame(updateLoop);
+		updateLoopFrame = requestAnimationFrame(updateLoop);
 	}
 	onMount(() => {
-		const frame = requestAnimationFrame(updateLoop);
-		return () => cancelAnimationFrame(frame);
+		updateLoopFrame = requestAnimationFrame(updateLoop);
+		return () => cancelAnimationFrame(updateLoopFrame);
 	});
 
 	onMount(async () => {
@@ -247,7 +236,7 @@
 		}
 	});
 
-	const onShake = (x:number, y:number) => {
+	const onShake = () => {
 		currentFluidIndex = (currentFluidIndex + 1) % fluidTypes.length;
 		const newFluid = fluidTypes[currentFluidIndex];
 
@@ -327,12 +316,5 @@
 		{/if}
 	{/if}
 
-	
 </div>
-
-
-<div>{message}</div>
-<div>{message2}</div>
-<div>{message3}</div>
-<div>{message4}</div>
 

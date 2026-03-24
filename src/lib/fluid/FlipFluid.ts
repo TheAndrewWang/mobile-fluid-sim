@@ -550,7 +550,8 @@ export class FlipFluid {
         overRelaxation: number,
         compensateDrift: boolean,
         separateParticles: boolean,
-        damping: number = 1.00
+        damping: number = 1.00,
+        updateGridColors: boolean = true
     ): void {
         const numSubSteps = 1;
         const sdt = dt / numSubSteps;
@@ -566,7 +567,9 @@ export class FlipFluid {
         }
 
         this.updateParticleColors(sdt);
-        this.updateCellColors();
+        if (updateGridColors) {
+            this.updateCellColors();
+        }
     }
 
     setFluidColor(baseColor: { r: number; g: number; b: number }): void {

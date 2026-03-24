@@ -118,6 +118,28 @@ export interface RenderConfig {
     simHeight: number;
 }
 
+type PointShaderLocations = {
+    attrPosition: number;
+    attrColor: number;
+    domainSize: WebGLUniformLocation | null;
+    pointSize: WebGLUniformLocation | null;
+    drawDisk: WebGLUniformLocation | null;
+};
+
+type AccumShaderLocations = {
+    attrPosition: number;
+    attrColor: number;
+    domainSize: WebGLUniformLocation | null;
+    radiusPx: WebGLUniformLocation | null;
+    accumScale: WebGLUniformLocation | null;
+};
+
+type CompositeShaderLocations = {
+    attrPosition: number;
+    accumTex: WebGLUniformLocation | null;
+    threshold: WebGLUniformLocation | null;
+};
+
 export class FluidRenderer {
     private gl: WebGLRenderingContext;
     private pointShader: WebGLProgram;
@@ -130,6 +152,9 @@ export class FluidRenderer {
     private gridColorBuffer: WebGLBuffer;
     private quadBuffer: WebGLBuffer;
     private gridVertBufferInitialized = false;
+    private pointLocs: PointShaderLocations;
+    private accumLocs: AccumShaderLocations;
+    private compositeLocs: CompositeShaderLocations;
 
     // Offscreen framebuffer for accumulation pass
     private accumFramebuffer: WebGLFramebuffer | null = null;
@@ -156,6 +181,28 @@ export class FluidRenderer {
         this.meshShader = this.createShader(meshVertexShader, meshFragmentShader);
         this.accumShader = this.createShader(accumVertexShader, accumFragmentShader);
         this.compositeShader = this.createShader(compositeVertexShader, compositeFragmentShader);
+
+        this.pointLocs = {
+            attrPosition: gl.getAttribLocation(this.pointShader, 'attrPosition'),
+            attrColor: gl.getAttribLocation(this.pointShader, 'attrColor'),
+            domainSize: gl.getUniformLocation(this.pointShader, 'domainSize'),
+            pointSize: gl.getUniformLocation(this.pointShader, 'pointSize'),
+            drawDisk: gl.getUniformLocation(this.pointShader, 'drawDisk')
+        };
+
+        this.accumLocs = {
+            attrPosition: gl.getAttribLocation(this.accumShader, 'attrPosition'),
+            attrColor: gl.getAttribLocation(this.accumShader, 'attrColor'),
+            domainSize: gl.getUniformLocation(this.accumShader, 'domainSize'),
+            radiusPx: gl.getUniformLocation(this.accumShader, 'radiusPx'),
+            accumScale: gl.getUniformLocation(this.accumShader, 'accumScale')
+        };
+
+        this.compositeLocs = {
+            attrPosition: gl.getAttribLocation(this.compositeShader, 'attrPosition'),
+            accumTex: gl.getUniformLocation(this.compositeShader, 'accumTex'),
+            threshold: gl.getUniformLocation(this.compositeShader, 'threshold')
+        };
 
         this.pointVertexBuffer = this.createBuffer();
         this.pointColorBuffer = this.createBuffer();
@@ -268,30 +315,28 @@ export class FluidRenderer {
         gl.blendFunc(gl.ONE, gl.ONE);
 
         gl.useProgram(this.accumShader);
-        gl.uniform2f(gl.getUniformLocation(this.accumShader, 'domainSize'), config.simWidth, config.simHeight);
-        gl.uniform1f(gl.getUniformLocation(this.accumShader, 'accumScale'), this.accumScale);
+        gl.uniform2f(this.accumLocs.domainSize, config.simWidth, config.simHeight);
+        gl.uniform1f(this.accumLocs.accumScale, this.accumScale);
 
         // Convert influence radius from sim units to pixels
         const radiusPx = this.influenceRadius / config.simWidth * w;
-        gl.uniform1f(gl.getUniformLocation(this.accumShader, 'radiusPx'), radiusPx);
+        gl.uniform1f(this.accumLocs.radiusPx, radiusPx);
 
-        const posLoc = gl.getAttribLocation(this.accumShader, 'attrPosition');
-        const colorLoc = gl.getAttribLocation(this.accumShader, 'attrColor');
-        gl.enableVertexAttribArray(posLoc);
-        gl.enableVertexAttribArray(colorLoc);
+        gl.enableVertexAttribArray(this.accumLocs.attrPosition);
+        gl.enableVertexAttribArray(this.accumLocs.attrColor);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.pointVertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, fluid.particlePos.subarray(0, 2 * fluid.numParticles), gl.DYNAMIC_DRAW);
-        gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+        gl.vertexAttribPointer(this.accumLocs.attrPosition, 2, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.pointColorBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, fluid.particleColor.subarray(0, 3 * fluid.numParticles), gl.DYNAMIC_DRAW);
-        gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
+        gl.vertexAttribPointer(this.accumLocs.attrColor, 3, gl.FLOAT, false, 0, 0);
 
         gl.drawArrays(gl.POINTS, 0, fluid.numParticles);
 
-        gl.disableVertexAttribArray(posLoc);
-        gl.disableVertexAttribArray(colorLoc);
+        gl.disableVertexAttribArray(this.accumLocs.attrPosition);
+        gl.disableVertexAttribArray(this.accumLocs.attrColor);
 
         // --- Pass 2: composite onto screen by thresholding alpha ---
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -299,19 +344,18 @@ export class FluidRenderer {
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); // restore normal blend
 
         gl.useProgram(this.compositeShader);
-        gl.uniform1i(gl.getUniformLocation(this.compositeShader, 'accumTex'), 0);
-        gl.uniform1f(gl.getUniformLocation(this.compositeShader, 'threshold'), this.threshold);
+        gl.uniform1i(this.compositeLocs.accumTex, 0);
+        gl.uniform1f(this.compositeLocs.threshold, this.threshold);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.accumTexture);
 
-        const qPosLoc = gl.getAttribLocation(this.compositeShader, 'attrPosition');
-        gl.enableVertexAttribArray(qPosLoc);
+        gl.enableVertexAttribArray(this.compositeLocs.attrPosition);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.quadBuffer);
-        gl.vertexAttribPointer(qPosLoc, 2, gl.FLOAT, false, 0, 0);
+        gl.vertexAttribPointer(this.compositeLocs.attrPosition, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-        gl.disableVertexAttribArray(qPosLoc);
+        gl.disableVertexAttribArray(this.compositeLocs.attrPosition);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
@@ -319,18 +363,16 @@ export class FluidRenderer {
     private renderPoints(fluid: FlipFluid, config: RenderConfig): void {
         const gl = this.gl;
         gl.useProgram(this.pointShader);
-        gl.uniform2f(gl.getUniformLocation(this.pointShader, 'domainSize'), config.simWidth, config.simHeight);
+        gl.uniform2f(this.pointLocs.domainSize, config.simWidth, config.simHeight);
 
-        const posLoc = gl.getAttribLocation(this.pointShader, 'attrPosition');
-        gl.enableVertexAttribArray(posLoc);
-        const colorLoc = gl.getAttribLocation(this.pointShader, 'attrColor');
-        gl.enableVertexAttribArray(colorLoc);
+        gl.enableVertexAttribArray(this.pointLocs.attrPosition);
+        gl.enableVertexAttribArray(this.pointLocs.attrColor);
 
         // Render grid cells
         if (config.showGrid) {
             const pointSize = 0.9 * fluid.h / config.simWidth * gl.canvas.width;
-            gl.uniform1f(gl.getUniformLocation(this.pointShader, 'pointSize'), pointSize);
-            gl.uniform1f(gl.getUniformLocation(this.pointShader, 'drawDisk'), 0.0);
+            gl.uniform1f(this.pointLocs.pointSize, pointSize);
+            gl.uniform1f(this.pointLocs.drawDisk, 0.0);
 
             if (!this.gridVertBufferInitialized) {
                 const cellCenters = new Float32Array(2 * fluid.fNumCells);
@@ -347,11 +389,11 @@ export class FluidRenderer {
             }
 
             gl.bindBuffer(gl.ARRAY_BUFFER, this.gridVertBuffer);
-            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(this.pointLocs.attrPosition, 2, gl.FLOAT, false, 0, 0);
 
             gl.bindBuffer(gl.ARRAY_BUFFER, this.gridColorBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, fluid.cellColor, gl.DYNAMIC_DRAW);
-            gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(this.pointLocs.attrColor, 3, gl.FLOAT, false, 0, 0);
 
             gl.drawArrays(gl.POINTS, 0, fluid.fNumCells);
         }
@@ -359,22 +401,22 @@ export class FluidRenderer {
         // Render particles
         if (config.showParticles) {
             const pointSize = 2.0 * fluid.particleRadius / config.simWidth * gl.canvas.width;
-            gl.uniform1f(gl.getUniformLocation(this.pointShader, 'pointSize'), pointSize);
-            gl.uniform1f(gl.getUniformLocation(this.pointShader, 'drawDisk'), 1.0);
+            gl.uniform1f(this.pointLocs.pointSize, pointSize);
+            gl.uniform1f(this.pointLocs.drawDisk, 1.0);
 
             gl.bindBuffer(gl.ARRAY_BUFFER, this.pointVertexBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, fluid.particlePos.subarray(0, 2 * fluid.numParticles), gl.DYNAMIC_DRAW);
-            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(this.pointLocs.attrPosition, 2, gl.FLOAT, false, 0, 0);
 
             gl.bindBuffer(gl.ARRAY_BUFFER, this.pointColorBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, fluid.particleColor.subarray(0, 3 * fluid.numParticles), gl.DYNAMIC_DRAW);
-            gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(this.pointLocs.attrColor, 3, gl.FLOAT, false, 0, 0);
 
             gl.drawArrays(gl.POINTS, 0, fluid.numParticles);
         }
 
-        gl.disableVertexAttribArray(posLoc);
-        gl.disableVertexAttribArray(colorLoc);
+        gl.disableVertexAttribArray(this.pointLocs.attrPosition);
+        gl.disableVertexAttribArray(this.pointLocs.attrColor);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
 
