@@ -14,6 +14,8 @@
 	var MAX_GRAVITY = 50.81;
 	let rawX = 0;
 	let rawY = 0;
+	let shakeSeq = $state(0);
+	let shakeVector = $state({ x: 0, y: 0 });
 
 	type AppState = 'loading' | 'needs-permission' | 'ready' | 'denied' | 'not-supported';
 
@@ -164,6 +166,11 @@
 		if (totalDelta > shakeThreshold && currentTime - lastShakeTime > shakeTimeThreshold) {
 			onShake();
 			lastShakeTime = currentTime;
+			shakeSeq += 1;
+			shakeVector = {
+				x: Math.max(-180, Math.min(180, x * 28)),
+				y: Math.max(-180, Math.min(180, -y * 28))
+			};
 
 			MAX_GRAVITY = 581.0;
 			if (deltaY > 3) {
@@ -305,6 +312,8 @@
 	{:else}
 		<FluidSimulation
 			{gravity}
+			{shakeSeq}
+			{shakeVector}
 			fluidColor={fluidColor.current}
 			foamColor={foamColor.current}
 			{colorDiffusionCoeff}

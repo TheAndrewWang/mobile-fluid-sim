@@ -14,6 +14,8 @@
 
 	let {
 		gravity = { x: 0, y: -9.81 },
+		shakeSeq = 0,
+		shakeVector = { x: 0, y: 0 },
 		resolution = 70,
 		fluidColor = { r: 0.09, g: 0.4, b: 1.0 },
 		foamColor = { r: 0.75, g: 0.9, b: 1.0 },
@@ -22,6 +24,8 @@
 		onclick
 	}: {
 		gravity?: { x: number; y: number };
+		shakeSeq?: number;
+		shakeVector?: { x: number; y: number };
 		resolution?: number;
 		angle?: number;
 		fluidColor?: { r: number; g: number; b: number };
@@ -54,6 +58,13 @@
 	let effectiveResolution = resolution;
 	let maxDpr = 2;
 	let isPageVisible = true;
+	let shakeForce = { x: 0, y: 0 };
+
+	function clamp(x: number, min: number, max: number) {
+		if (x < min) return min;
+		if (x > max) return max;
+		return x;
+	}
 
 	// Particle count controls
 	const relWaterWidth = 0.6; // Water width as fraction of tank (0.1 to 1.0)
@@ -120,11 +131,13 @@
 
 	function simulate() {
 		if (!fluid) return;
+		const gx = gravity.x + shakeForce.x;
+		const gy = gravity.y + shakeForce.y;
 
 		fluid.simulate(
 			dt,
-			gravity.x,
-			gravity.y,
+			gx,
+			gy,
 			flipRatio,
 			numPressureIters,
 			numParticleIters,
@@ -134,6 +147,12 @@
 			damping,
 			showGrid
 		);
+
+		const decay = Math.exp(-8 * dt);
+		shakeForce.x *= decay;
+		shakeForce.y *= decay;
+		if (Math.abs(shakeForce.x) < 0.05) shakeForce.x = 0;
+		if (Math.abs(shakeForce.y) < 0.05) shakeForce.y = 0;
 	}
 
 	function render() {
@@ -238,6 +257,13 @@
 		if (fluid) {
 			fluid.setFoamReturnRate(foamReturnRate);
 		}
+	});
+
+	$effect(() => {
+		if (shakeSeq <= 0) return;
+		const maxKick = 180;
+		shakeForce.x += clamp(shakeVector.x, -maxKick, maxKick);
+		shakeForce.y += clamp(shakeVector.y, -maxKick, maxKick);
 	});
 </script>
 
