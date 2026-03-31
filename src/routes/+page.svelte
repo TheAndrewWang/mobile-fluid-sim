@@ -229,20 +229,34 @@
 		}
 	});
 
+	let isMouseDown = $state(false); // Track the button state
+
+	const onMouseDown = () => { isMouseDown = true; };
+	const onMouseUp = () => { isMouseDown = false; };
+
 	const onMouseMove = (event: MouseEvent) => {
-		if (appState === 'not-supported' || appState === 'ready') {
-			// Calculate a fake tilt based on mouse position relative to screen center
+		// Only calculate "tilt" if we are on a desktop AND the button is held
+		if ((appState === 'not-supported' || appState === 'ready') && isMouseDown) {
 			const x = (event.clientX / window.innerWidth) - 0.5;
 			const y = (event.clientY / window.innerHeight) - 0.5;
 			
+			// Multiply by 2 to give it a stronger "tilt" feel
 			rawX = x * GRAVITY_SCALE * 2;
 			rawY = -y * GRAVITY_SCALE * 2;
 		}
 	};
 
 	onMount(() => {
+		// Standard listeners for the mouse movement
 		window.addEventListener('mousemove', onMouseMove);
-		return () => window.removeEventListener('mousemove', onMouseMove);
+		window.addEventListener('mousedown', onMouseDown);
+		window.addEventListener('mouseup', onMouseUp);
+
+		return () => {
+			window.removeEventListener('mousemove', onMouseMove);
+			window.removeEventListener('mousedown', onMouseDown);
+			window.removeEventListener('mouseup', onMouseUp);
+		};
 	});
 
 	onDestroy(() => {
@@ -276,6 +290,14 @@
 <div
 	class="relative flex h-screen flex-col items-center justify-center bg-gradient-to-b from-gray-900 via-gray-800 to-gray-950"
 >
+	<button class="absolute top-4 left-4 focus:outline-none group">
+    <div class="flex items-center gap-2 rounded-lg bg-gray-700/50 px-3 py-1 text-sm text-gray-300 backdrop-blur-sm transition-all hover:bg-gray-700/80 group-focus:ring-2 group-focus:ring-gray-500 group-focus:ring-offset-2 group-focus:ring-offset-gray-900">
+        <img src="menu-icon.png" alt="Menu Icon" class="h-4 w-4 object-contain" />
+
+
+    </div>
+</button>
+
 	<GitHubLink />
 	{#if appState === 'loading'}
 		<div class="text-center">
