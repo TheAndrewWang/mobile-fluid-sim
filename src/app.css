@@ -1,1 +1,28 @@
 @import 'tailwindcss';
+
+    /* Define the 18-column grid */
+    .grid-cols-18 {
+        display: grid;
+        grid-template-columns: repeat(18, minmax(0, 1fr));
+    }
+
+    /* Styling for the element button "slots" */
+    .element-slot {
+        @apply aspect-square flex items-center justify-center rounded-md 
+               bg-gray-800/40 border border-gray-700/30 transition-all 
+               hover:bg-blue-500/20 hover:border-blue-400/50 hover:scale-110 active:scale-95;
+    }
+
+    /* Scaling the images within the slots */
+    .element-img {
+        @apply h-full w-full object-contain p-1 opacity-80 group-hover:opacity-100;
+    }
+
+    /* Custom scrollbar for mobile users */
+    ::-webkit-scrollbar {
+        height: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #374151;
+        border-radius: 10px;
+    }

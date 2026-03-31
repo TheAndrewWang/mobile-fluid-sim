@@ -285,18 +285,99 @@
 		colorDiffusionCoeff = newFluid.colorDiffusionCoeff;
 		foamReturnRate = newFluid.foamReturnRate;
 	};
+
+	let isMenuOpen = $state(false);
+
+	const toggleMenu = (event: MouseEvent) => {
+		// stopPropagation prevents the "onTap" fluid color change 
+		// from firing at the same time as the menu opening
+		event.stopPropagation(); 
+		isMenuOpen = !isMenuOpen;
+	};
+
+	const selectElement = (elementName: string, elementPNG: string) => {
+		// Logic to change fluid behavior based on element
+		console.log("Selected:", elementName);
+		isMenuOpen = false;
+		
+	};
 </script>
 
 <div
 	class="relative flex h-screen flex-col items-center justify-center bg-gradient-to-b from-gray-900 via-gray-800 to-gray-950"
 >
-	<button class="absolute top-4 left-4 focus:outline-none group">
-    <div class="flex items-center gap-2 rounded-lg bg-gray-700/50 px-3 py-1 text-sm text-gray-300 backdrop-blur-sm transition-all hover:bg-gray-700/80 group-focus:ring-2 group-focus:ring-gray-500 group-focus:ring-offset-2 group-focus:ring-offset-gray-900">
-        <img src="menu-icon.png" alt="Menu Icon" class="h-4 w-4 object-contain" />
+	
+	<button 
+		onclick={toggleMenu} 
+		class="absolute top-8 left-8 z-50 focus:outline-none transition-transform hover:scale-110 active:scale-95 text-white"
+		aria-label="Open menu"
+		title="Open menu"
+		aria-expanded={isMenuOpen}
+	>
+		<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>
+		</svg>
+	</button>
 
+{#if isMenuOpen}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <div 
+        class="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-xl"
+        role="button"
+        tabindex="0"
+        aria-label="Close menu"
+        onclick={() => isMenuOpen = false}
+    >
+        <div 
+            class="relative max-w-5xl w-[95vw] rounded-3xl bg-gray-900/90 p-8 shadow-2xl border border-gray-700/50"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Periodic Table Element Selection"
+            tabindex="0"
+            onclick={(e) => e.stopPropagation()} 
+        >
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-black tracking-tighter text-white uppercase">Select Element</h2>
+                <button onclick={() => isMenuOpen = false} class="text-gray-500 hover:text-white transition-colors">
+                    ✕ Close
+                </button>
+            </div>
 
+            <div class="grid grid-cols-18 gap-1 md:gap-2 overflow-x-auto pb-4">
+                
+                <button class="element-slot group" title="Hydrogen">
+                    <img src="h.png" alt="H" class="element-img" />
+                </button>
+                
+                <div class="col-span-16"></div> 
+                
+                <button class="element-slot group" title="Helium">
+                    <img src="he.png" alt="He" class="element-img" />
+                </button>
+
+                <button class="element-slot group" title="Lithium">
+                    <img src="li.png" alt="Li" class="element-img" />
+                </button>
+                <button class="element-slot group" title="Beryllium">
+                    <img src="be.png" alt="Be" class="element-img" />
+                </button>
+                
+                <div class="col-span-10"></div>
+
+                <button class="element-slot group" title="Boron">
+                    <img src="b.png" alt="B" class="element-img" />
+                </button>
+                <button onclick={() => selectElement('Carbon', 'carbon.png')} class="element-slot group" title="Carbon">
+                    <img src="carbon.png" alt="C" class="element-img" />
+                </button>
+                </div>
+            
+            <p class="mt-4 text-center text-xs text-gray-500 italic">
+                Click an element to inject it into the fluid simulation.
+            </p>
+        </div>
     </div>
-</button>
+{/if}
 
 	<GitHubLink />
 	{#if appState === 'loading'}
@@ -350,3 +431,4 @@
 		{/if}
 	{/if}
 </div>
+
