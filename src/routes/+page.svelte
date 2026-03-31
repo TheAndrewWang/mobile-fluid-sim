@@ -229,6 +229,22 @@
 		}
 	});
 
+	const onMouseMove = (event: MouseEvent) => {
+		if (appState === 'not-supported' || appState === 'ready') {
+			// Calculate a fake tilt based on mouse position relative to screen center
+			const x = (event.clientX / window.innerWidth) - 0.5;
+			const y = (event.clientY / window.innerHeight) - 0.5;
+			
+			rawX = x * GRAVITY_SCALE * 2;
+			rawY = -y * GRAVITY_SCALE * 2;
+		}
+	};
+
+	onMount(() => {
+		window.addEventListener('mousemove', onMouseMove);
+		return () => window.removeEventListener('mousemove', onMouseMove);
+	});
+
 	onDestroy(() => {
 		if (browser && window) {
 			window.removeEventListener('deviceorientation', onOrientationChange);
