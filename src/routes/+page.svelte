@@ -198,13 +198,42 @@
 
 	let updateLoopFrame = 0;
 	function updateLoop() {
-		shakeImpulseY *= SHAKE_IMPULSE_DECAY;
+        shakeImpulseY *= SHAKE_IMPULSE_DECAY;
+        gravity.x = rawX;
+        gravity.y = rawY + shakeImpulseY;
 
-		gravity.x = rawX;
-		gravity.y = rawY + shakeImpulseY;
+        if (fallingElement) {
+            const dt = 1.0 / 60.0; // Standardize to 60fps for smoother desktop/mobile parity
+            const bounceDamping = 0.3; // Lower value = more "thud", less "bouncy ball"
 
-		updateLoopFrame = requestAnimationFrame(updateLoop);
-	}
+            // Convert raw gravity to simulation meters
+            const gx = (gravity.x / GRAVITY_SCALE) * 8; 
+            const gy = (gravity.y / GRAVITY_SCALE) * 8;
+
+            fallingElement.vx += gx * dt;
+            fallingElement.vy += gy * dt;
+            fallingElement.simX += fallingElement.vx * dt;
+            fallingElement.simY += fallingElement.vy * dt;
+
+            // Walls (Clamping)
+            if (fallingElement.simX < 0.1) {
+                fallingElement.simX = 0.1;
+                fallingElement.vx *= -bounceDamping;
+            } else if (fallingElement.simX > SIM_WIDTH - 0.1) {
+                fallingElement.simX = SIM_WIDTH - 0.1;
+                fallingElement.vx *= -bounceDamping;
+            }
+
+            if (fallingElement.simY < 0.1) {
+                fallingElement.simY = 0.1;
+                fallingElement.vy *= -bounceDamping;
+            } else if (fallingElement.simY > SIM_HEIGHT - 0.1) {
+                fallingElement.simY = SIM_HEIGHT - 0.1;
+                fallingElement.vy *= -bounceDamping;
+            }
+        }
+        updateLoopFrame = requestAnimationFrame(updateLoop);
+    }
 
 	onMount(() => {
 		updateLoopFrame = requestAnimationFrame(updateLoop);
@@ -295,12 +324,31 @@
 		isMenuOpen = !isMenuOpen;
 	};
 
-	const selectElement = (elementName: string, elementPNG: string) => {
-		// Logic to change fluid behavior based on element
-		console.log("Selected:", elementName);
-		isMenuOpen = false;
-		
-	};
+	// In your main +page.svelte script
+	const SIM_WIDTH = 4.0; 
+	const SIM_HEIGHT = 3.0;
+
+	let fallingElement = $state<{ 
+		simX: number, // Position in Simulation Meters
+		simY: number, 
+		vx: number, 
+		vy: number, 
+		img: string 
+	} | null>(null);
+
+	const selectElement = (event: MouseEvent | TouchEvent, elementName: string, elementPNG: string) => {
+        event.stopPropagation(); 
+        isMenuOpen = false;
+
+        fallingElement = {
+            simX: SIM_WIDTH / 2,
+            simY: SIM_HEIGHT / 2, // Start exactly in the middle so you can see it immediately
+            vx: 0,
+            vy: 0,
+            img: elementPNG
+        };
+    };
+	
 </script>
 
 <div
@@ -320,62 +368,61 @@
 	</button>
 
 {#if isMenuOpen}
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
     <div 
-        class="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-xl"
-        role="button"
-        tabindex="0"
-        aria-label="Close menu"
+        class="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-xl p-4"
         onclick={() => isMenuOpen = false}
     >
         <div 
-            class="relative max-w-5xl w-[95vw] rounded-3xl bg-gray-900/90 p-8 shadow-2xl border border-gray-700/50"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Periodic Table Element Selection"
-            tabindex="0"
+            class="relative max-w-6xl w-full max-h-[85vh] rounded-3xl bg-gray-900/90 p-6 md:p-10 shadow-2xl border border-gray-700/50 flex flex-col"
             onclick={(e) => e.stopPropagation()} 
         >
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-black tracking-tighter text-white uppercase">Select Element</h2>
-                <button onclick={() => isMenuOpen = false} class="text-gray-500 hover:text-white transition-colors">
-                    ✕ Close
-                </button>
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-black tracking-tighter text-white uppercase">Periodic Table</h2>
+                <button onclick={() => isMenuOpen = false} class="text-gray-500 hover:text-white text-2xl">✕</button>
             </div>
 
-            <div class="grid grid-cols-18 gap-1 md:gap-2 overflow-x-auto pb-4">
-                
-                <button class="element-slot group" title="Hydrogen">
-                    <img src="h.png" alt="H" class="element-img" />
-                </button>
-                
-                <div class="col-span-16"></div> 
-                
-                <button class="element-slot group" title="Helium">
-                    <img src="he.png" alt="He" class="element-img" />
-                </button>
+            <div class="menu-scroll-area">
+                <div class="grid-cols-18">
+                    <button onclick={(e) => selectElement(e, 'Hydrogen', 'h.png')} class="element-slot group">
+                        <img src="h.png" alt="H" class="element-img" />
+                    </button>
+                    
+                    <div class="col-span-16"></div> 
+                    
+                    <button class="element-slot group"><img src="he.png" alt="He" class="element-img" /></button>
 
-                <button class="element-slot group" title="Lithium">
-                    <img src="li.png" alt="Li" class="element-img" />
-                </button>
-                <button class="element-slot group" title="Beryllium">
-                    <img src="be.png" alt="Be" class="element-img" />
-                </button>
-                
-                <div class="col-span-10"></div>
+                    <button class="element-slot group"><img src="li.png" alt="Li" class="element-img" /></button>
+                    <button class="element-slot group"><img src="be.png" alt="Be" class="element-img" /></button>
+                    
+                    <div class="col-span-10"></div>
 
-                <button class="element-slot group" title="Boron">
-                    <img src="b.png" alt="B" class="element-img" />
-                </button>
-                <button onclick={() => selectElement('Carbon', 'carbon.png')} class="element-slot group" title="Carbon">
-                    <img src="carbon.png" alt="C" class="element-img" />
-                </button>
+                    <button class="element-slot group"><img src="b.png" alt="B" class="element-img" /></button>
+                    <button onclick={(e) => selectElement(e, 'Carbon', 'carbon.png')} class="element-slot group">
+                        <img src="carbon.png" alt="C" class="element-img" />
+                    </button>
                 </div>
+            </div>
             
-            <p class="mt-4 text-center text-xs text-gray-500 italic">
-                Click an element to inject it into the fluid simulation.
+            <p class="mt-6 text-center text-sm text-gray-400 animate-pulse">
+                ← Swipe to explore elements →
             </p>
         </div>
+    </div>
+{/if}
+
+{#if fallingElement}
+    {@const posX = (fallingElement.simX / SIM_WIDTH) * 100}
+    {@const posY = (1 - (fallingElement.simY / SIM_HEIGHT)) * 100}
+
+    <div 
+        class="pointer-events-none absolute z-50"
+        style="left: {posX}%; top: {posY}%; transform: translate(-50%, -50%);"
+    >
+        <img 
+            src={fallingElement.img} 
+            alt="Element" 
+            class="h-12 w-12 md:h-20 md:w-20 object-contain drop-shadow-2xl"
+        />
     </div>
 {/if}
 

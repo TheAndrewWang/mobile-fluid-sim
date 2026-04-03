@@ -6,16 +6,17 @@
         grid-template-columns: repeat(18, minmax(0, 1fr));
     }
 
-    /* Styling for the element button "slots" */
     .element-slot {
-        @apply aspect-square flex items-center justify-center rounded-md 
-               bg-gray-800/40 border border-gray-700/30 transition-all 
-               hover:bg-blue-500/20 hover:border-blue-400/50 hover:scale-110 active:scale-95;
+        @apply relative aspect-square flex items-center justify-center rounded-md 
+            bg-gray-800/30 border border-white/5 backdrop-blur-sm
+            transition-all duration-200 ease-out
+            hover:bg-blue-500/20 hover:border-blue-400/50 hover:scale-125 hover:z-50
+            active:scale-95;
+        /* Added scale-125 and z-50 to make the selection pop more */
     }
 
-    /* Scaling the images within the slots */
     .element-img {
-        @apply h-full w-full object-contain p-1 opacity-80 group-hover:opacity-100;
+        @apply h-full w-full object-contain p-1 opacity-70 transition-opacity duration-200;
     }
 
     /* Custom scrollbar for mobile users */
@@ -25,4 +26,21 @@
     ::-webkit-scrollbar-thumb {
         background: #374151;
         border-radius: 10px;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(18, minmax(40px, 1fr)); /* Force columns to be at least 40px */
+        gap: 0.5rem;
+        min-width: 800px; /* This forces the horizontal scroll on mobile */
+    }
+
+    .element-slot {
+        @apply aspect-square flex items-center justify-center rounded-lg 
+               bg-gray-800/60 border border-gray-700 transition-all 
+               active:scale-90 touch-manipulation;
+    }
+
+    .element-img {
+        @apply w-full h-full object-contain p-1;
     }
