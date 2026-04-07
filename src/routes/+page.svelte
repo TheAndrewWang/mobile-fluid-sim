@@ -203,38 +203,41 @@
         gravity.x = rawX;
         gravity.y = rawY + shakeImpulseY;
 
-        if (fallingElement) {
-            const dt = 1.0 / 60.0; // Standardize to 60fps for smoother desktop/mobile parity
-            const bounceDamping = 0.3; // Lower value = more "thud", less "bouncy ball"
+        const dt = 1.0 / 60.0;
+        const bounceDamping = 0.3;
+        const radius = 0.15; 
 
-            // Convert raw gravity to simulation meters
-            const gx = (gravity.x / GRAVITY_SCALE) * 8; 
-            const gy = (gravity.y / GRAVITY_SCALE) * 8;
+        const gx = (gravity.x / GRAVITY_SCALE) * 8; 
+        const gy = (gravity.y / GRAVITY_SCALE) * 8;
 
-            fallingElement.vx += gx * dt;
-            fallingElement.vy += gy * dt;
-            fallingElement.simX += fallingElement.vx * dt;
-            fallingElement.simY += fallingElement.vy * dt;
+        // Loop through all elements
+        fallingElements.forEach(el => {
+            el.vx += gx * dt;
+            el.vy += gy * dt;
+            el.simX += el.vx * dt;
+            el.simY += el.vy * dt;
 
             // Walls (Clamping)
-            if (fallingElement.simX < 0.1) {
-                fallingElement.simX = 0.1;
-                fallingElement.vx *= -bounceDamping;
-            } else if (fallingElement.simX > SIM_WIDTH - 0.1) {
-                fallingElement.simX = SIM_WIDTH - 0.1;
-                fallingElement.vx *= -bounceDamping;
+            if (el.simX < radius) {
+                el.simX = radius;
+                el.vx *= -bounceDamping;
+            } else if (el.simX > SIM_WIDTH - radius) {
+                el.simX = SIM_WIDTH - radius;
+                el.vx *= -bounceDamping;
             }
 
-            if (fallingElement.simY < 0.1) {
-                fallingElement.simY = 0.1;
-                fallingElement.vy *= -bounceDamping;
-            } else if (fallingElement.simY > SIM_HEIGHT - 0.1) {
-                fallingElement.simY = SIM_HEIGHT - 0.1;
-                fallingElement.vy *= -bounceDamping;
+            if (el.simY < radius) {
+                el.simY = radius;
+                el.vy *= -bounceDamping;
+            } else if (el.simY > SIM_HEIGHT - radius) {
+                el.simY = SIM_HEIGHT - radius;
+                el.vy *= -bounceDamping;
             }
-        }
+        });
+
         updateLoopFrame = requestAnimationFrame(updateLoop);
     }
+
 
 	onMount(() => {
 		updateLoopFrame = requestAnimationFrame(updateLoop);
@@ -341,34 +344,44 @@
 	};
 
 	// In your main +page.svelte script
-	const SIM_WIDTH = 4.0; 
-	const SIM_HEIGHT = 3.0;
+	let SIM_WIDTH = $state(4.0);
+	let SIM_HEIGHT = $state(3.0);
 
-	let fallingElement = $state<{ 
-		simX: number, // Position in Simulation Meters
-		simY: number, 
-		vx: number, 
-		vy: number, 
-		img: string 
-	} | null>(null);
+	// Update these whenever the window resizes
+	const updateBounds = () => {
+		if (!browser) return;
+		const ratio = window.innerWidth / window.innerHeight;
+		// Keep height at 3.0 units, but scale width based on the screen ratio
+		SIM_WIDTH = 3.0 * ratio;
+		SIM_HEIGHT = 3.0;
+	};
+
+	let fallingElements = $state<{ 
+        simX: number, 
+        simY: number, 
+        vx: number, 
+        vy: number, 
+        img: string 
+    }[]>([]);
 
 	const selectElement = (event: MouseEvent | TouchEvent, elementName: string, elementPNG: string) => {
         event.stopPropagation(); 
         isMenuOpen = false;
 
-        fallingElement = {
+        // Push a new element into the array
+        fallingElements.push({
             simX: SIM_WIDTH / 2,
-            simY: SIM_HEIGHT / 2, // Start exactly in the middle so you can see it immediately
+            simY: SIM_HEIGHT / 2,
             vx: 0,
             vy: 0,
             img: elementPNG
-        };
+        });
     };
 	
 </script>
 
 <div
-	class="relative flex h-screen flex-col items-center justify-center bg-gradient-to-b from-gray-900 via-gray-800 to-gray-950"
+	class="relative flex h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-gray-900 via-gray-800 to-gray-950"
 >
 	
 	<button 
@@ -419,23 +432,23 @@
 
 			<div class="menu-scroll-area">
 				<div class="grid-cols-18">
-					<button onclick={(e) => selectElement(e, 'Hydrogen', 'h.png')} class="element-slot group">
-						<img src="h.png" alt="H" class="element-img" />
-					</button>
-					
-					<div class="col-span-16"></div> 
-					
-					<button class="element-slot group"><img src="he.png" alt="He" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Hydrogen', 'H.png')} class="element-slot group"><img src="H.png" alt="H" class="element-img" /></button>
 
-					<button class="element-slot group"><img src="li.png" alt="Li" class="element-img" /></button>
-					<button class="element-slot group"><img src="be.png" alt="Be" class="element-img" /></button>
-					
+					<div class="col-span-16"></div>
+
+					<button onclick={(e) => selectElement(e, 'Helium', 'He.png')} class="element-slot group"><img src="He.png" alt="He" class="element-img" /></button>
+
+					<button onclick={(e) => selectElement(e, 'Lithium', 'Li.png')} class="element-slot group"><img src="Li.png" alt="Li" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Beryllium', 'Be.png')} class="element-slot group"><img src="Be.png" alt="Be" class="element-img" /></button>
+
 					<div class="col-span-10"></div>
 
-					<button class="element-slot group"><img src="b.png" alt="B" class="element-img" /></button>
-					<button onclick={(e) => selectElement(e, 'Carbon', 'carbon.png')} class="element-slot group">
-						<img src="carbon.png" alt="C" class="element-img" />
-					</button>
+					<button onclick={(e) => selectElement(e, 'Boron', 'B.png')} class="element-slot group"><img src="B.png" alt="B" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Carbon', 'carbon.png')} class="element-slot group"><img src="C.png" alt="C" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Nitrogen', 'N.png')} class="element-slot group"><img src="N.png" alt="N" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Oxygen', 'O.png')} class="element-slot group"><img src="O.png" alt="O" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Fluorine', 'F.png')} class="element-slot group"><img src="F.png" alt="F" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Neon', 'Ne.png')} class="element-slot group"><img src="Ne.png" alt="Ne" class="element-img" /></button>
 				</div>
 			</div>
 			
@@ -446,21 +459,20 @@
 	</div>
 {/if}
 
-{#if fallingElement}
-    {@const posX = (fallingElement.simX / SIM_WIDTH) * 100}
-    {@const posY = (1 - (fallingElement.simY / SIM_HEIGHT)) * 100}
-
+{#each fallingElements as el}
     <div 
         class="pointer-events-none absolute z-50"
-        style="left: {posX}%; top: {posY}%; transform: translate(-50%, -50%);"
+        style="left: {(el.simX / SIM_WIDTH) * 100}%; 
+               top: {(1 - (el.simY / SIM_HEIGHT)) * 100}%; 
+               transform: translate(-50%, -50%);"
     >
         <img 
-            src={fallingElement.img} 
+            src={el.img} 
             alt="Element" 
             class="h-12 w-12 md:h-20 md:w-20 object-contain drop-shadow-2xl"
         />
     </div>
-{/if}
+{/each}
 
 	<GitHubLink />
 	{#if appState === 'loading'}
