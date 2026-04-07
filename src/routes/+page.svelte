@@ -18,6 +18,10 @@
 	const SHAKE_IMPULSE_STRENGTH = -80;
 	const SHAKE_IMPULSE_DECAY = 0.9;
 
+	//Variables for explosion
+	const EXPLOSION_RANGE = 0.5;
+	const EXPLOSION_FORCE = 5;
+
 	let rawX = 0;
 	let rawY = 0;
 	let shakeImpulseY = 0;
@@ -320,18 +324,20 @@
 	};
 
 	const explode = (event: any) => {
-		if (fallingElement != null) {
-			let x: number = (event.clientX / window.innerWidth) * SIM_WIDTH;
-			let y: number = SIM_HEIGHT - ((event.clientY / window.innerHeight) * SIM_HEIGHT);
+		let x: number = (event.clientX / window.innerWidth) * SIM_WIDTH;
+		let y: number = SIM_HEIGHT - ((event.clientY / window.innerHeight) * SIM_HEIGHT);
 
+		fallingElements.forEach(fallingElement => {
 			let diffX: number = fallingElement.simX - x;
 			let diffY: number = fallingElement.simY - y;
 			
-			if (Math.abs(diffX) < 0.5 && Math.abs(diffY) < 0.5) {
-				fallingElement.vx = 1000;
-				fallingElement.vy = 1000;
+			if (Math.abs(diffX) < EXPLOSION_RANGE && Math.abs(diffY) < EXPLOSION_RANGE) {
+				let ratioX = diffX / (Math.abs(diffX) + Math.abs(diffY));
+				let ratioY = diffY / (Math.abs(diffX) + Math.abs(diffY));
+				fallingElement.vx += (EXPLOSION_RANGE - Math.abs(diffX)) * EXPLOSION_FORCE * ratioX;
+				fallingElement.vy += (EXPLOSION_RANGE - Math.abs(diffY)) * EXPLOSION_FORCE * ratioY;
 			}
-		}
+		});
 	}
 
 	let isMenuOpen = $state(false);
