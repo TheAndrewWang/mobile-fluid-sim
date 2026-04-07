@@ -135,6 +135,7 @@
 
 	onMount(() => {
 		window.addEventListener('click', onTap);
+		window.addEventListener('click', explode);
 		return () => {
 			window.removeEventListener('click', onTap);
 		};
@@ -314,6 +315,21 @@
 		colorDiffusionCoeff = newFluid.colorDiffusionCoeff;
 		foamReturnRate = newFluid.foamReturnRate;
 	};
+
+	const explode = (event: any) => {
+		if (fallingElement != null) {
+			let x: number = (event.clientX / window.innerWidth) * SIM_WIDTH;
+			let y: number = SIM_HEIGHT - ((event.clientY / window.innerHeight) * SIM_HEIGHT);
+
+			let diffX: number = fallingElement.simX - x;
+			let diffY: number = fallingElement.simY - y;
+			
+			if (Math.abs(diffX) < 0.5 && Math.abs(diffY) < 0.5) {
+				fallingElement.vx = 1000;
+				fallingElement.vy = 1000;
+			}
+		}
+	}
 
 	let isMenuOpen = $state(false);
 
