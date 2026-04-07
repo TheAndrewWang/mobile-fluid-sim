@@ -368,46 +368,66 @@
 	</button>
 
 {#if isMenuOpen}
-    <div 
-        class="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-xl p-4"
-        onclick={() => isMenuOpen = false}
-    >
-        <div 
-            class="relative max-w-6xl w-full max-h-[85vh] rounded-3xl bg-gray-900/90 p-6 md:p-10 shadow-2xl border border-gray-700/50 flex flex-col"
-            onclick={(e) => e.stopPropagation()} 
-        >
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-black tracking-tighter text-white uppercase">Periodic Table</h2>
-                <button onclick={() => isMenuOpen = false} class="text-gray-500 hover:text-white text-2xl">✕</button>
-            </div>
+	<div 
+		class="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-xl p-4"
+		role="button"
+		tabindex="0"
+		onclick={() => isMenuOpen = false}
+		onkeydown={(e: KeyboardEvent) => {
+			// allow Enter/Space to close the overlay for keyboard users
+			if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar' || e.code === 'Space') {
+				e.preventDefault();
+				isMenuOpen = false;
+			}
+			e.stopPropagation();
+		}}
+	>
+		<div 
+			class="relative max-w-6xl w-full max-h-[85vh] rounded-3xl bg-gray-900/90 p-6 md:p-10 shadow-2xl border border-gray-700/50 flex flex-col"
+			role="dialog"
+			aria-modal="true"
+			tabindex="0"
+			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e: KeyboardEvent) => {
+				// ensure Escape closes the dialog and that keyboard events don't bubble to the overlay
+				if (e.key === 'Escape') {
+					isMenuOpen = false;
+				}
+				e.stopPropagation();
+			}}
+		>
+			<div class="flex justify-between items-center mb-8">
+				<h2 class="text-3xl font-black tracking-tighter text-white uppercase">Periodic Table</h2>
+				<button onclick={() => isMenuOpen = false} class="text-gray-500 hover:text-white text-2xl" aria-label="Close menu">✕</button>
+			</div>
 
-            <div class="menu-scroll-area">
-                <div class="grid-cols-18">
-                    <button onclick={(e) => selectElement(e, 'Hydrogen', 'h.png')} class="element-slot group">
-                        <img src="h.png" alt="H" class="element-img" />
-                    </button>
-                    
-                    <div class="col-span-16"></div> 
-                    
-                    <button class="element-slot group"><img src="he.png" alt="He" class="element-img" /></button>
+			<div class="menu-scroll-area">
+				<div class="grid-cols-18">
+					<button onclick={(e) => selectElement(e, 'Hydrogen', 'h.png')} class="element-slot group">
+						<img src="h.png" alt="H" class="element-img" />
+					</button>
+					
+					<div class="col-span-16"></div> 
+					
+					<button class="element-slot group"><img src="he.png" alt="He" class="element-img" /></button>
 
-                    <button class="element-slot group"><img src="li.png" alt="Li" class="element-img" /></button>
-                    <button class="element-slot group"><img src="be.png" alt="Be" class="element-img" /></button>
-                    
-                    <div class="col-span-10"></div>
+					<button class="element-slot group"><img src="li.png" alt="Li" class="element-img" /></button>
+					<button class="element-slot group"><img src="be.png" alt="Be" class="element-img" /></button>
+					
+					<div class="col-span-10"></div>
 
-                    <button class="element-slot group"><img src="b.png" alt="B" class="element-img" /></button>
-                    <button onclick={(e) => selectElement(e, 'Carbon', 'carbon.png')} class="element-slot group">
-                        <img src="carbon.png" alt="C" class="element-img" />
-                    </button>
-                </div>
-            </div>
-            
-            <p class="mt-6 text-center text-sm text-gray-400 animate-pulse">
-                ← Swipe to explore elements →
-            </p>
-        </div>
-    </div>
+					<button class="element-slot group"><img src="b.png" alt="B" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Carbon', 'carbon.png')} class="element-slot group">
+						<img src="carbon.png" alt="C" class="element-img" />
+					</button>
+				</div>
+			</div>
+			
+			<p class="mt-6 text-center text-sm text-gray-400 animate-pulse">
+				← Swipe to explore elements →
+			</p>
+		</div>
+	</div>
 {/if}
 
 {#if fallingElement}
