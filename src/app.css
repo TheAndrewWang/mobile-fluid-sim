@@ -1,46 +1,52 @@
 @import 'tailwindcss';
 
-    /* Define the 18-column grid */
+/* Define the 18-column grid */
     .grid-cols-18 {
         display: grid;
-        grid-template-columns: repeat(18, minmax(0, 1fr));
-    }
-
-    .element-slot {
-        @apply relative aspect-square flex items-center justify-center rounded-md 
-            bg-gray-800/30 border border-white/5 backdrop-blur-sm
-            transition-all duration-200 ease-out
-            hover:bg-blue-500/20 hover:border-blue-400/50 hover:scale-125 hover:z-50
-            active:scale-95;
-        /* Added scale-125 and z-50 to make the selection pop more */
-    }
-
-    .element-img {
-        @apply h-full w-full object-contain p-1 opacity-70 transition-opacity duration-200;
-    }
-
-    /* Custom scrollbar for mobile users */
-    ::-webkit-scrollbar {
-        height: 6px;
-    }
-    ::-webkit-scrollbar-thumb {
-        background: #374151;
-        border-radius: 10px;
-    }
-
-    .grid-container {
-        display: grid;
-        grid-template-columns: repeat(18, minmax(40px, 1fr)); /* Force columns to be at least 40px */
+        grid-template-columns: repeat(18, minmax(40px, 1fr));
         gap: 0.5rem;
-        min-width: 800px; /* This forces the horizontal scroll on mobile */
+        min-width: 900px; /* Increased slightly to ensure it feels "Big" */
     }
 
     .element-slot {
-        @apply aspect-square flex items-center justify-center rounded-lg 
-               bg-gray-800/60 border border-gray-700 transition-all 
-               active:scale-90 touch-manipulation;
+        position: relative;
+        aspect-ratio: 1 / 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem;
+        background-color: rgba(31, 41, 55, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+        transition-property: all;
+        transition-duration: 200ms;
+        transition-timing-function: ease-out;
+        touch-action: manipulation;
+    }
+    .element-slot:hover {
+        background-color: rgba(59, 130, 246, 0.2);
+        border-color: rgba(96, 165, 250, 0.5);
+        transform: scale(1.10);
+    }
+    .element-slot:active {
+        transform: scale(0.90);
     }
 
     .element-img {
-        @apply w-full h-full object-contain p-1;
+        height: 100%;
+        width: 100%;
+        object-fit: contain;
+        padding: 0.5rem;
+        opacity: 0.9;
+        transition: opacity 200ms;
+    }
+
+    /* This wrapper is the secret to making it big on mobile */
+    .menu-scroll-area {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling for iOS */
+        padding-bottom: 1rem;
     }

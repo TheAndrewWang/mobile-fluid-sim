@@ -29,6 +29,7 @@
 		colorDiffusionCoeff?: number;
 		foamReturnRate?: number;
 		onclick?: () => void;
+		image?: string;
 	} = $props();
 
 	let canvas: HTMLCanvasElement;
