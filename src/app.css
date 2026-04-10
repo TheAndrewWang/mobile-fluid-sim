@@ -1,52 +1,79 @@
 @import 'tailwindcss';
 
-/* Define the 18-column grid */
+/* 1. The Scroll Area */
+.menu-scroll-area {
+    width: 100%;
+    max-height: 80vh; 
+    overflow-x: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: flex-start; /* Default for mobile scrolling */
+}
+
+/* 2. The Grid - The "Magic" happens here */
+.grid-cols-18 {
+    display: grid;
+    grid-template-columns: repeat(18, minmax(50px, 1fr));
+    gap: 0.5rem;
+    /* On mobile, we force it to be wide */
+    min-width: 1100px; 
+    margin: auto; /* Centers the table if there is extra space */
+}
+
+/* 3. MacBook / Desktop Adjustments */
+@media (min-width: 1200px) {
     .grid-cols-18 {
-        display: grid;
-        grid-template-columns: repeat(18, minmax(40px, 1fr));
-        gap: 0.5rem;
-        min-width: 900px; /* Increased slightly to ensure it feels "Big" */
-    }
-
-    .element-slot {
-        position: relative;
-        aspect-ratio: 1 / 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 0.5rem;
-        background-color: rgba(31, 41, 55, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        -webkit-backdrop-filter: blur(4px);
-        backdrop-filter: blur(4px);
-        transition-property: all;
-        transition-duration: 200ms;
-        transition-timing-function: ease-out;
-        touch-action: manipulation;
-    }
-    .element-slot:hover {
-        background-color: rgba(59, 130, 246, 0.2);
-        border-color: rgba(96, 165, 250, 0.5);
-        transform: scale(1.10);
-    }
-    .element-slot:active {
-        transform: scale(0.90);
-    }
-
-    .element-img {
-        height: 100%;
+        /* On large screens, let it fit the container without forcing 1200px */
+        min-width: auto; 
         width: 100%;
-        object-fit: contain;
-        padding: 0.5rem;
-        opacity: 0.9;
-        transition: opacity 200ms;
+        max-width: 1100px;
+        gap: 0.75rem;
     }
-
-    /* This wrapper is the secret to making it big on mobile */
+    
     .menu-scroll-area {
-        width: 100%;
-        overflow-x: auto;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling for iOS */
-        padding-bottom: 1rem;
+        /* Center the table on desktop */
+        justify-content: center;
+        overflow-x: hidden; /* Remove unnecessary scrollbar on Mac */
+        mask-image: none;
+        -webkit-mask-image: none;
     }
+}
+
+/* 4. Mobile-specific "Swipe" hint */
+@media (max-width: 1199px) {
+    .menu-scroll-area {
+        mask-image: linear-gradient(to right, black 90%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
+    }
+}
+
+/* 5. Elements */
+.element-slot {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    background-color: rgba(31, 41, 55, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease-out;
+    touch-action: manipulation;
+}
+
+.element-slot:hover {
+    background-color: rgba(59, 130, 246, 0.3);
+    border-color: rgba(96, 165, 250, 0.5);
+    transform: scale(1.1);
+    z-index: 20;
+}
+
+.element-img {
+    height: 85%;
+    width: 85%;
+    object-fit: contain;
+    padding: 2px;
+}

@@ -47,7 +47,7 @@
 	const separateParticles = true;
 	const showParticles = false; // set true to overlay raw particles on top
 	const showFluid = true; // metaball fluid surface
-	const showGrid = false;
+	const showGrid = true;
 
 	let numPressureIters = 60;
 	let numParticleIters = 3;

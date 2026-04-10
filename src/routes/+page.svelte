@@ -218,8 +218,8 @@
         fallingElements.forEach(el => {
             el.vx += gx * dt;
             el.vy += gy * dt;
-            el.simX += el.vx * dt;
-            el.simY += el.vy * dt;
+            el.simX += el.vx * el.density * dt; // Heavier elements are more affected by gravity
+            el.simY += el.vy * el.density * dt;
 
             // Walls (Clamping)
             if (el.simX < radius) {
@@ -367,20 +367,22 @@
         simY: number, 
         vx: number, 
         vy: number, 
-        img: string 
+        img: string, 
+		density: number
     }[]>([]);
 
-	const selectElement = (event: MouseEvent | TouchEvent, elementName: string, elementPNG: string) => {
+	const selectElement = (event: MouseEvent | TouchEvent, elementName: string, elementPNG: string, elementDensity: number) => {
         event.stopPropagation(); 
         isMenuOpen = false;
 
         // Push a new element into the array
         fallingElements.push({
             simX: SIM_WIDTH / 2,
-            simY: SIM_HEIGHT / 2,
+            simY: SIM_HEIGHT,
             vx: 0,
             vy: 0,
-            img: elementPNG
+            img: elementPNG,
+			density: elementDensity 
         });
     };
 	
@@ -438,23 +440,23 @@
 
 			<div class="menu-scroll-area">
 				<div class="grid-cols-18">
-					<button onclick={(e) => selectElement(e, 'Hydrogen', 'H.png')} class="element-slot group"><img src="H.png" alt="H" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Hydrogen', 'H.png', 1)} class="element-slot group"><img src="H.png" alt="H" class="element-img" /></button>
 
 					<div class="col-span-16"></div>
 
-					<button onclick={(e) => selectElement(e, 'Helium', 'He.png')} class="element-slot group"><img src="He.png" alt="He" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Helium', 'He.png', 0.18)} class="element-slot group"><img src="He.png" alt="He" class="element-img" /></button>
 
-					<button onclick={(e) => selectElement(e, 'Lithium', 'Li.png')} class="element-slot group"><img src="Li.png" alt="Li" class="element-img" /></button>
-					<button onclick={(e) => selectElement(e, 'Beryllium', 'Be.png')} class="element-slot group"><img src="Be.png" alt="Be" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Lithium', 'Li.png', 0.53)} class="element-slot group"><img src="Li.png" alt="Li" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Beryllium', 'Be.png', 1.85)} class="element-slot group"><img src="Be.png" alt="Be" class="element-img" /></button>
 
 					<div class="col-span-10"></div>
 
-					<button onclick={(e) => selectElement(e, 'Boron', 'B.png')} class="element-slot group"><img src="B.png" alt="B" class="element-img" /></button>
-					<button onclick={(e) => selectElement(e, 'Carbon', 'carbon.png')} class="element-slot group"><img src="C.png" alt="C" class="element-img" /></button>
-					<button onclick={(e) => selectElement(e, 'Nitrogen', 'N.png')} class="element-slot group"><img src="N.png" alt="N" class="element-img" /></button>
-					<button onclick={(e) => selectElement(e, 'Oxygen', 'O.png')} class="element-slot group"><img src="O.png" alt="O" class="element-img" /></button>
-					<button onclick={(e) => selectElement(e, 'Fluorine', 'F.png')} class="element-slot group"><img src="F.png" alt="F" class="element-img" /></button>
-					<button onclick={(e) => selectElement(e, 'Neon', 'Ne.png')} class="element-slot group"><img src="Ne.png" alt="Ne" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Boron', 'B.png', 2.34)} class="element-slot group"><img src="B.png" alt="B" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Carbon', 'carbon.png', 2.26)} class="element-slot group"><img src="C.png" alt="C" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Nitrogen', 'N.png', 1)} class="element-slot group"><img src="N.png" alt="N" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Oxygen', 'O.png', 0.001)} class="element-slot group"><img src="O.png" alt="O" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Fluorine', 'F.png', 0.001)} class="element-slot group"><img src="F.png" alt="F" class="element-img" /></button>
+					<button onclick={(e) => selectElement(e, 'Neon', 'Ne.png', 1)} class="element-slot group"><img src="Ne.png" alt="Ne" class="element-img" /></button>
 				</div>
 			</div>
 			
